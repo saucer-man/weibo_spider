@@ -1,0 +1,86 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>微博热点分析</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.12.5/umd/popper.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//cdn.bootcss.com/socket.io/1.5.1/socket.io.min.js"></script>
+
+    <script type="text/javascript" charset="utf-8">
+    $(document).ready(function() {
+        namespace = '/weibo';
+        //http://127.0.0.1:5000/weibo
+        var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+        
+        // 点击开始，
+        $('form#subdomain').submit(function(event) {
+                socket.emit('client_event'); 
+                return false;
+            });
+        // 清空所有的内容
+        socket.on("clean", function(msg) {
+            document.getElementById("result").value = "";
+            document.getElementById("analyse_result").value = "";
+            //$("#wordcloud").html('');
+            //$("#qinggan").html('');
+            document.getElementById("wordcloud").innerHTML=''
+            document.getElementById("qinggan").innerHTML=''
+        });
+
+        // 接收进度结果，更新当前正在做的事情
+        socket.on("server_jindu_event", function(msg) {
+            //alert(msg)
+            $("#jindu").text(msg);
+        });
+        // 接收微博结果
+        socket.on("server_weibo_event", function(msg) {
+            var result = $('#result').val() + msg + "\n";
+            $('#result').val(result);
+        });
+        // 接收分析结果，之最
+        socket.on("server_analyse_event", function(msg) {
+            var result = $('#analyse_result').val() + msg + "\n";
+            $('#analyse_result').val(result);
+        });
+        // 词云更新
+        socket.on("server_wordcloud_event", function(msg) {
+            //alert(msg)
+            image = '<img src="data:image/png;base64,'+ msg + '" />'
+            //$("#wordcloud").html(image);
+            document.getElementById("wordcloud").innerHTML=image
+        });
+        //情感更新
+        socket.on("server_qinggan_event", function(msg) {
+            image = '<img src="data:image/png;base64,'+ msg + '" />'
+            //$("#qinggan").html(image);
+            document.getElementById("qinggan").innerHTML=image
+        });
+    });
+    
+    </script>   
+</head>
+<body>
+
+<div class="container">
+</br >
+    <h2>微博热点分析</h2>
+    </br >
+    <form class="form-inline" id="subdomain">
+        <input type="submit" value="开始" class="btn btn-primary" >
+    </form>    </br >
+
+    <p id="jindu">进度情况</p>
+    <textarea class="form-control" rows="20" id="result"></textarea>
+    <textarea class="form-control" rows="10" id="analyse_result"></textarea>
+
+    <p id = 'wordcloud'> </p>
+    <p id = 'qinggan'> </p>
+</div>
+
+</br ></br ></br ></br ></br ></br >
+</body>
+</html>
